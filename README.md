@@ -32,3 +32,5 @@ dotnet ef migrations add InitialCreate --context WebAppDatabaseContext --project
 ```
 
 The project has a worker service that will initialize the database with a first admin user. To log in the default user is "admin@default.com" with password "default".
+
+hello world
