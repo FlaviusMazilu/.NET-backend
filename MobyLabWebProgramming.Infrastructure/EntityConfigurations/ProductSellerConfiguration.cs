@@ -13,6 +13,11 @@ public class ProductSellerConfiguration : IEntityTypeConfiguration<ProductSeller
             .IsRequired();
         builder.Property(e => e.UpdatedAt)
             .IsRequired();
+        builder.Property(e => e.Quantity)
+            .IsRequired()
+            .HasDefaultValue(0);
+        builder.Property(e => e.Discount)
+            .HasDefaultValue(0);
         builder.HasKey(e => new { e.ProductId, e.SellerId });
     }
 }

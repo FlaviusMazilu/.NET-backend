@@ -11,11 +11,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Name)
             .IsRequired();
-        builder.Property(e => e.Quantity)
-            .IsRequired()
-            .HasDefaultValue(0);
-        builder.Property(e => e.Discount)
-            .HasDefaultValue(0);
         builder.HasOne(e => e.Category)
             .WithMany(e => e.Products)
             .HasForeignKey(e => e.CategoryId)
