@@ -13,5 +13,6 @@ public class ProductSellerConfiguration : IEntityTypeConfiguration<ProductSeller
             .IsRequired();
         builder.Property(e => e.UpdatedAt)
             .IsRequired();
+        builder.HasKey(e => new { e.ProductId, e.SellerId });
     }
 }

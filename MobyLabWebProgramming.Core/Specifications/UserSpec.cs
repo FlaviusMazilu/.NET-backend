@@ -10,7 +10,8 @@ namespace MobyLabWebProgramming.Core.Specifications;
 /// </summary>
 public sealed class UserSpec : Specification<User>
 {
-    public UserSpec(Guid id) => Query.Where(e => e.Id == id);
+    public UserSpec(Guid id) => Query.Where(e => e.Id == id).Include(e => e.Credentials);
 
-    public UserSpec(string email) => Query.Where(e => e.Credentials.Email == email);
+    public UserSpec(string email) => Query.Where(e => e.Credentials.Email == email).Include(e => e.Credentials);
+    
 }

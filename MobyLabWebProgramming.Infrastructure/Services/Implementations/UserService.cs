@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using MobyLabWebProgramming.Core.Constants;
 using MobyLabWebProgramming.Core.DataTransferObjects;
 using MobyLabWebProgramming.Core.Entities;
@@ -69,51 +70,52 @@ public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginSe
 
     public async Task<ServiceResponse> AddUser(UserAddDTO user, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
-    //     if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin) // Verify who can add the user, you can change this however you se fit.
-    //     {
-    //         return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the admin can add users!", ErrorCodes.CannotAdd));
-    //     }
-    //
-    //     var result = await repository.GetAsync(new UserSpec(user.Email), cancellationToken);
-    //
-    //     if (result != null)
-    //     {
-    //         return ServiceResponse.FromError(new(HttpStatusCode.Conflict, "The user already exists!", ErrorCodes.UserAlreadyExists));
-    //     }
-    //
-    //     await repository.AddAsync(new User
-    //     {
-    //         Email = user.Email,
-    //         Name = user.Name,
-    //         Role = user.Role,
-    //         Password = user.Password
-    //     }, cancellationToken); // A new entity is created and persisted in the database.
-    //
-    //     await mailService.SendMail(user.Email, "Welcome!", MailTemplates.UserAddTemplate(user.Name), true, "My App", cancellationToken); // You can send a notification on the user email. Change the email if you want.
-    //
+    
+    var result = await repository.GetAsync(new UserSpec(user.Email), cancellationToken);
+    
+    if (result != null)
+    {
+        return ServiceResponse.FromError(new(HttpStatusCode.Conflict, "The user already exists!", ErrorCodes.UserAlreadyExists));
+    }
+    
+    await repository.AddAsync(new User
+    {
+        Credentials = new Credentials()
+        {
+            Email = user.Email,
+            Password = user.Password
+        },
+        Name = user.Name,
+        Role = user.Role,
+    }, cancellationToken); // A new entity is created and persisted in the database.
+    
+    await mailService.SendMail(user.Email, "Welcome!", MailTemplates.UserAddTemplate(user.Name), true, "My App", cancellationToken); // You can send a notification on the user email. Change the email if you want.
+    
     return ServiceResponse.ForSuccess();
     }
-
+    
+    [Authorize]
     public async Task<ServiceResponse> UpdateUser(UserUpdateDTO user, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
-        // if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin && requestingUser.Id != user.Id) // Verify who can add the user, you can change this however you se fit.
-        // {
-        //     return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the admin or the own user can update the user!", ErrorCodes.CannotUpdate));
-        // }
-        //
-        // var entity = await repository.GetAsync(new UserSpec(user.Id), cancellationToken); 
-        //
-        // if (entity != null) // Verify if the user is not found, you cannot update a non-existing entity.
-        // {
-        //     entity.Name = user.Name ?? entity.Name;
-        //     entity.Password = user.Password ?? entity.Password;
-        //
-        //     await repository.UpdateAsync(entity, cancellationToken); // Update the entity and persist the changes.
-        // }
+        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin && requestingUser.Id != user.Id) // Verify who can add the user, you can change this however you se fit.
+        {
+            return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the admin or the own user can update the user!", ErrorCodes.CannotUpdate));
+        }
+        
+        var entity = await repository.GetAsync(new UserSpec(user.Id), cancellationToken);
+        
+        if (entity != null) // Verify if the user is not found, you cannot update a non-existing entity.
+        {
+            entity.Name = user.Name ?? entity.Name;
+            entity.Credentials.Password = user.Password ?? entity.Credentials.Password;
+        
+            await repository.UpdateAsync(entity, cancellationToken); // Update the entity and persist the changes.
+        }
     
         return ServiceResponse.ForSuccess();
     }
-
+    
+    [Authorize]
     public async Task<ServiceResponse> DeleteUser(Guid id, UserDTO? requestingUser = null, CancellationToken cancellationToken = default)
     {
         if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin && requestingUser.Id != id) // Verify who can add the user, you can change this however you se fit.
