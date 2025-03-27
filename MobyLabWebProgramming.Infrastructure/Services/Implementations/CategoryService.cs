@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using MobyLabWebProgramming.Core.DataTransferObjects;
 using MobyLabWebProgramming.Core.Entities;
+using MobyLabWebProgramming.Core.Enums;
 using MobyLabWebProgramming.Core.Errors;
 using MobyLabWebProgramming.Core.Responses;
 using MobyLabWebProgramming.Core.Specifications;
@@ -39,6 +40,9 @@ public class CategoryService(IRepository<WebAppDatabaseContext> repository) : IC
     public async Task<ServiceResponse> AddCategory(CategoryAddDTO category, UserDTO? requestingUser = null,
         CancellationToken cancellationToken = default)
     {
+        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin)
+            return ServiceResponse.FromError(CommonErrors.UnauthorizedAdminAction);
+        
         var result = await repository.GetAsync(new CategorySpec(category.Name), cancellationToken);
 
         if (result != null)
@@ -54,8 +58,30 @@ public class CategoryService(IRepository<WebAppDatabaseContext> repository) : IC
         return ServiceResponse.ForSuccess();
     }
 
+    public async Task<ServiceResponse> UpdateCategory(CategoryUpdateDTO category, UserDTO? requestingUser = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin)
+            return ServiceResponse.FromError(CommonErrors.UnauthorizedAdminAction);
+       
+        var entity = await repository.GetAsync<Category>(category.id, cancellationToken);
+
+        if (entity == null)
+            return ServiceResponse.FromError(new ErrorMessage(HttpStatusCode.NotFound, "Category not found"));
+        
+        entity.Name = category.Name ?? entity.Name;
+        entity.Description = category.Description ?? entity.Description;
+        
+        await repository.UpdateAsync(entity, cancellationToken);
+        
+        return ServiceResponse.ForSuccess();
+    }
+
     public async Task<ServiceResponse> DeleteCategory(Guid id, UserDTO? requestingUser = null, CancellationToken cancellationToken = default)
     {
+        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin)
+            return ServiceResponse.FromError(CommonErrors.UnauthorizedAdminAction);
+
         var result = await repository.GetAsync(new CategorySpec(id), cancellationToken);
         if (result == null)
             return ServiceResponse.FromError(new ErrorMessage(HttpStatusCode.NotFound, "Category not found"));

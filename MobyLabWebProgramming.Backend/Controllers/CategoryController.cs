@@ -12,7 +12,6 @@ namespace MobyLabWebProgramming.Backend.Controllers;
 public class CategoryController(ICategoryService categoryService, IUserService userService)
     : AuthorizedController(userService)
 {   
-    [Authorize]
     [HttpGet]
     public async Task<ActionResult<RequestResponse<List<CategoryDTO>>>> GetAll()
     {
@@ -22,5 +21,48 @@ public class CategoryController(ICategoryService categoryService, IUserService u
             ? FromServiceResponse(await categoryService.GetCategories())
             : ErrorMessageResult<List<CategoryDTO>>(currentUser.Error);
 
+    }
+    
+    [HttpGet(template: "{id:Guid}")]
+    public async Task<ActionResult<RequestResponse<CategoryDTO>>> GetCategory([FromRoute] Guid id)
+    {
+        var currentUser = await GetCurrentUser();
+        
+        return currentUser.Result != null
+            ? FromServiceResponse(await categoryService.GetCategory(id))
+            : ErrorMessageResult<CategoryDTO>(currentUser.Error);
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<ActionResult<RequestResponse>> Add([FromBody] CategoryAddDTO category)
+    {
+        var currentUser = await GetCurrentUser();
+
+        return currentUser.Result != null
+            ? FromServiceResponse(await categoryService.AddCategory(category, currentUser.Result))
+            : ErrorMessageResult(currentUser.Error);
+    }
+
+    [Authorize]
+    [HttpPut]
+    public async Task<ActionResult<RequestResponse>> Update([FromBody] CategoryUpdateDTO category)
+    {
+        var currentUser = await GetCurrentUser();
+        
+        return currentUser.Result != null
+            ? FromServiceResponse(await categoryService.UpdateCategory(category, currentUser.Result))
+            : ErrorMessageResult(currentUser.Error);
+    }
+
+    [Authorize]
+    [HttpDelete]
+    public async Task<ActionResult<RequestResponse>> Delete(Guid id)
+    {
+        var currentUser = await GetCurrentUser();
+        
+        return currentUser.Result != null
+            ? FromServiceResponse(await categoryService.DeleteCategory(id)) :
+            ErrorMessageResult(currentUser.Error);
     }
 }
