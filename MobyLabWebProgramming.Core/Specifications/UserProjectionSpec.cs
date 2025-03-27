@@ -19,7 +19,7 @@ public sealed class UserProjectionSpec : Specification<User, UserDTO>
         Query.Select(e => new()
         {
             Id = e.Id,
-            Email = e.Email,
+            Email = e.Credentials.Email,
             Name = e.Name,
             Role = e.Role
         })

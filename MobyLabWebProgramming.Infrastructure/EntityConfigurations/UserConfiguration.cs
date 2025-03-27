@@ -21,13 +21,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(e => e.Name)
             .HasMaxLength(255) // This specifies the maximum length for varchar type in the database.
             .IsRequired();
-        builder.Property(e => e.Email)
-            .HasMaxLength(255)
-            .IsRequired();
-        builder.HasAlternateKey(e => e.Email); // Here it is specified that the property Email is a unique key.
-        builder.Property(e => e.Password)
-            .HasMaxLength(255)
-            .IsRequired();
+        // builder.Property(e => e.Email)
+            // .HasMaxLength(255)
+            // .IsRequired();
+        // builder.HasAlternateKey(e => e.Email); // Here it is specified that the property Email is a unique key.
+        // builder.Property(e => e.Password)
+            // .HasMaxLength(255)
+            // .IsRequired();
         builder.Property(e => e.Role)
             .HasConversion(new EnumToStringConverter<UserRoleEnum>())
             .HasMaxLength(255)
@@ -36,5 +36,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
         builder.Property(e => e.UpdatedAt)
             .IsRequired();
+        builder.Property(e => e.CredentialsId)
+            .IsRequired();
+        builder.HasAlternateKey(e => e.CredentialsId);
+
+        builder.HasOne(e => e.Credentials)
+            .WithOne(e => e.User)
+            .HasPrincipalKey<Credentials>(e => e.Id)
+            .HasForeignKey<User>(e => e.CredentialsId);
     }
 }

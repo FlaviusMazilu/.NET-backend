@@ -44,7 +44,7 @@ public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginSe
             return ServiceResponse.FromError<LoginResponseDTO>(CommonErrors.UserNotFound); // Pack the proper error as the response.
         }
 
-        if (result.Password != login.Password) // Verify if the password hash of the request is the same as the one in the database.
+        if (result.Credentials.Password != login.Password) // Verify if the password hash of the request is the same as the one in the database.
         {
             return ServiceResponse.FromError<LoginResponseDTO>(new(HttpStatusCode.BadRequest, "Wrong password!", ErrorCodes.WrongPassword));
         }
@@ -52,7 +52,7 @@ public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginSe
         var user = new UserDTO
         {
             Id = result.Id,
-            Email = result.Email,
+            Email = result.Credentials.Email,
             Name = result.Name,
             Role = result.Role
         };
@@ -69,48 +69,48 @@ public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginSe
 
     public async Task<ServiceResponse> AddUser(UserAddDTO user, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
-        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin) // Verify who can add the user, you can change this however you se fit.
-        {
-            return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the admin can add users!", ErrorCodes.CannotAdd));
-        }
-
-        var result = await repository.GetAsync(new UserSpec(user.Email), cancellationToken);
-
-        if (result != null)
-        {
-            return ServiceResponse.FromError(new(HttpStatusCode.Conflict, "The user already exists!", ErrorCodes.UserAlreadyExists));
-        }
-
-        await repository.AddAsync(new User
-        {
-            Email = user.Email,
-            Name = user.Name,
-            Role = user.Role,
-            Password = user.Password
-        }, cancellationToken); // A new entity is created and persisted in the database.
-
-        await mailService.SendMail(user.Email, "Welcome!", MailTemplates.UserAddTemplate(user.Name), true, "My App", cancellationToken); // You can send a notification on the user email. Change the email if you want.
-
-        return ServiceResponse.ForSuccess();
+    //     if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin) // Verify who can add the user, you can change this however you se fit.
+    //     {
+    //         return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the admin can add users!", ErrorCodes.CannotAdd));
+    //     }
+    //
+    //     var result = await repository.GetAsync(new UserSpec(user.Email), cancellationToken);
+    //
+    //     if (result != null)
+    //     {
+    //         return ServiceResponse.FromError(new(HttpStatusCode.Conflict, "The user already exists!", ErrorCodes.UserAlreadyExists));
+    //     }
+    //
+    //     await repository.AddAsync(new User
+    //     {
+    //         Email = user.Email,
+    //         Name = user.Name,
+    //         Role = user.Role,
+    //         Password = user.Password
+    //     }, cancellationToken); // A new entity is created and persisted in the database.
+    //
+    //     await mailService.SendMail(user.Email, "Welcome!", MailTemplates.UserAddTemplate(user.Name), true, "My App", cancellationToken); // You can send a notification on the user email. Change the email if you want.
+    //
+    return ServiceResponse.ForSuccess();
     }
 
     public async Task<ServiceResponse> UpdateUser(UserUpdateDTO user, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
-        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin && requestingUser.Id != user.Id) // Verify who can add the user, you can change this however you se fit.
-        {
-            return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the admin or the own user can update the user!", ErrorCodes.CannotUpdate));
-        }
-
-        var entity = await repository.GetAsync(new UserSpec(user.Id), cancellationToken); 
-
-        if (entity != null) // Verify if the user is not found, you cannot update a non-existing entity.
-        {
-            entity.Name = user.Name ?? entity.Name;
-            entity.Password = user.Password ?? entity.Password;
-
-            await repository.UpdateAsync(entity, cancellationToken); // Update the entity and persist the changes.
-        }
-
+        // if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin && requestingUser.Id != user.Id) // Verify who can add the user, you can change this however you se fit.
+        // {
+        //     return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the admin or the own user can update the user!", ErrorCodes.CannotUpdate));
+        // }
+        //
+        // var entity = await repository.GetAsync(new UserSpec(user.Id), cancellationToken); 
+        //
+        // if (entity != null) // Verify if the user is not found, you cannot update a non-existing entity.
+        // {
+        //     entity.Name = user.Name ?? entity.Name;
+        //     entity.Password = user.Password ?? entity.Password;
+        //
+        //     await repository.UpdateAsync(entity, cancellationToken); // Update the entity and persist the changes.
+        // }
+    
         return ServiceResponse.ForSuccess();
     }
 

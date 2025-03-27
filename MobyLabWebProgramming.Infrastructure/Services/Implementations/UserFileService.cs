@@ -24,9 +24,9 @@ public class UserFileService(IRepository<WebAppDatabaseContext> repository, IFil
 
     public async Task<ServiceResponse<PagedResponse<UserFileDTO>>> GetUserFiles(PaginationSearchQueryParams pagination, CancellationToken cancellationToken = default)
     {
-        var result = await repository.PageAsync(pagination, new UserFileProjectionSpec(pagination.Search), cancellationToken);
-
-        return ServiceResponse.ForSuccess(result);
+        // var result = await repository.PageAsync(pagination, new UserFileProjectionSpec(pagination.Search), cancellationToken);
+        return null;
+        // return ServiceResponse.ForSuccess(null);
     }
 
     public async Task<ServiceResponse> SaveFile(UserFileAddDTO file, UserDTO requestingUser, CancellationToken cancellationToken = default)
@@ -38,23 +38,23 @@ public class UserFileService(IRepository<WebAppDatabaseContext> repository, IFil
             return fileName.ToResponse();
         }
 
-        await repository.AddAsync(new UserFile
-        {
-            Name = file.File.FileName,
-            Description = file.Description,
-            Path = fileName.Result,
-            UserId = requestingUser.Id
-        }, cancellationToken); // When the file is saved on the filesystem save the returned file path in the database to identify the file.
+        // await repository.AddAsync(new UserFile
+        // {
+            // Name = file.File.FileName,
+            // Description = file.Description,
+            // Path = fileName.Result,
+            // UserId = requestingUser.Id
+        // }, cancellationToken); // When the file is saved on the filesystem save the returned file path in the database to identify the file.
 
         return ServiceResponse.ForSuccess();
     }
 
     public async Task<ServiceResponse<FileDTO>> GetFileDownload(Guid id, CancellationToken cancellationToken = default) // If not successful respond with the error.
     {
-        var userFile = await repository.GetAsync<UserFile>(id, cancellationToken); // First get the file entity from the database to find the location on the filesystem.
-
-        return userFile != null ? 
-            fileRepository.GetFile(Path.Join(GetFileDirectory(userFile.UserId), userFile.Path), userFile.Name) : 
-            ServiceResponse.FromError<FileDTO>(new(HttpStatusCode.NotFound, "File entry not found!", ErrorCodes.EntityNotFound));
+        // var userFile = await repository.GetAsync<UserFile>(id, cancellationToken); // First get the file entity from the database to find the location on the filesystem.
+        return null;
+        // return userFile != null ? 
+            // fileRepository.GetFile(Path.Join(GetFileDirectory(userFile.UserId), userFile.Path), userFile.Name) : 
+            // ServiceResponse.FromError<FileDTO>(new(HttpStatusCode.NotFound, "File entry not found!", ErrorCodes.EntityNotFound));
     }
 }

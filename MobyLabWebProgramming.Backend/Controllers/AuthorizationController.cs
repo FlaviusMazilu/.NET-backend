@@ -23,4 +23,10 @@ public class AuthorizationController(IUserService userService) : BaseResponseCon
     {
         return FromServiceResponse(await userService.Login(login with { Password = PasswordUtils.HashPassword(login.Password)})); // The "with" keyword works only with records and it creates another object instance with the updated properties. 
     }
+
+    // [HttpGet("api/{type}/user/{id:guid}")]
+    // public Task<IActionResult> MyMethod([FromRoute] Guid id, [FromRoute] string type)
+    // {
+    //     return 0;
+    // }
 }
