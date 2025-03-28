@@ -13,7 +13,7 @@ public interface IUserService
     /// <summary>
     /// GetUser will provide the information about a user given its user Id.
     /// </summary>
-    public Task<ServiceResponse<UserDTO>> GetUser(Guid id, CancellationToken cancellationToken = default);
+    public Task<ServiceResponse<UserDTO>> GetUser(Guid id, UserDTO? requestingUser = null, CancellationToken cancellationToken = default);
     /// <summary>
     /// GetUsers returns page with user information from the database.
     /// </summary>

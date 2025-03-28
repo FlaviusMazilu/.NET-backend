@@ -11,7 +11,13 @@ namespace MobyLabWebProgramming.Backend.Controllers;
 [Route("api/[controller]/[action]")]
 public class CategoryController(ICategoryService categoryService, IUserService userService)
     : AuthorizedController(userService)
-{   
+{
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<RequestResponse<CategoryDTO>>> GetById([FromRoute] Guid id)
+    {
+        return FromServiceResponse(await categoryService.GetCategory(id));
+    }
+    
     [HttpGet]
     public async Task<ActionResult<RequestResponse<List<CategoryDTO>>>> GetAll()
     {
@@ -62,7 +68,7 @@ public class CategoryController(ICategoryService categoryService, IUserService u
         var currentUser = await GetCurrentUser();
         
         return currentUser.Result != null
-            ? FromServiceResponse(await categoryService.DeleteCategory(id)) :
+            ? FromServiceResponse(await categoryService.DeleteCategory(id, currentUser.Result)) :
             ErrorMessageResult(currentUser.Error);
     }
 }

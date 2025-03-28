@@ -20,8 +20,13 @@ namespace MobyLabWebProgramming.Infrastructure.Services.Implementations;
 public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginService loginService, IMailService mailService)
     : IUserService
 {
-    public async Task<ServiceResponse<UserDTO>> GetUser(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ServiceResponse<UserDTO>> GetUser(Guid id, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
+        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin) // Verify who can add the user, you can change this however you se fit.
+        {
+            return ServiceResponse.FromError<UserDTO>(new ErrorMessage(HttpStatusCode.Forbidden, "Only the admin or the own user can update the user!", ErrorCodes.CannotUpdate));
+        }
+        
         var result = await repository.GetAsync(new UserProjectionSpec(id), cancellationToken); // Get a user using a specification on the repository.
 
         return result != null ? 

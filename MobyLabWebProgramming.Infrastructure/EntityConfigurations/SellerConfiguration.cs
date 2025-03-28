@@ -16,5 +16,6 @@ public class SellerConfiguration : IEntityTypeConfiguration<Seller>
             .IsRequired();
         builder.Property(e => e.UpdatedAt)
             .IsRequired();
+        builder.HasAlternateKey(e => e.CUI);
     }
 }

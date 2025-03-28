@@ -8,7 +8,7 @@ public class ProductSeller : BaseEntity
     public Guid ProductId { get; set; }
     
     [Range(0f, 1f)]
-    public int Price { get; set; }
+    public float Price { get; set; }
     public float Discount { get; set; }
     public int Quantity { get; set; }
 }

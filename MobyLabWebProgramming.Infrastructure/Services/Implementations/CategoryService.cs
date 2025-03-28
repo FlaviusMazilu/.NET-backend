@@ -15,7 +15,7 @@ public class CategoryService(IRepository<WebAppDatabaseContext> repository) : IC
 {
     public async Task<ServiceResponse<CategoryDTO>> GetCategory(Guid id, CancellationToken cancellationToken = default)
     {
-        var result = await repository.GetAsync(new CategoryProjectionSpec(), cancellationToken);
+        var result = await repository.GetAsync(new CategoryProjectionSpec(id), cancellationToken);
 
         return result != null ?
             ServiceResponse.ForSuccess(result) :

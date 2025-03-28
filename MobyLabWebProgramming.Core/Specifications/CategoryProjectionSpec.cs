@@ -14,5 +14,6 @@ public class CategoryProjectionSpec : Specification<Category, CategoryDTO>
             Description = e.Description,
         })
         .OrderByDescending(e => e.CreatedAt, orderByCreatedAt);
+    public CategoryProjectionSpec(Guid guid) : this() => Query.Where(e => e.Id == guid);
 
 }
