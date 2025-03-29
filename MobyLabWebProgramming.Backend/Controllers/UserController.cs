@@ -43,7 +43,7 @@ public class UserController(IUserService userService) : AuthorizedController(use
         var currentUser = await GetCurrentUser();
 
         return currentUser.Result != null ?
-            FromServiceResponse(await UserService.GetUsers(pagination)) :
+            FromServiceResponse(await UserService.GetUsers(pagination, currentUser.Result)) :
             ErrorMessageResult<PagedResponse<UserDTO>>(currentUser.Error);
     }
 
@@ -61,6 +61,18 @@ public class UserController(IUserService userService) : AuthorizedController(use
             FromServiceResponse(await UserService.AddUser(user, currentUser.Result)) :
             ErrorMessageResult(currentUser.Error);
     }
+    
+    [HttpPost]
+    public async Task<ActionResult<RequestResponse>> Register([FromBody] UserAddDTO user)
+    {
+        var currentUser = await GetCurrentUser();
+        user.Password = PasswordUtils.HashPassword(user.Password);
+
+        return currentUser.Result != null ?
+            FromServiceResponse(await UserService.RegisterUser(user, currentUser.Result)) :
+            ErrorMessageResult(currentUser.Error);
+    }
+
 
     /// <summary>
     /// This method implements the Update operation (U from CRUD) on a user. 

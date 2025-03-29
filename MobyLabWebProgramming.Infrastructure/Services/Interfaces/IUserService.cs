@@ -17,7 +17,7 @@ public interface IUserService
     /// <summary>
     /// GetUsers returns page with user information from the database.
     /// </summary>
-    public Task<ServiceResponse<PagedResponse<UserDTO>>> GetUsers(PaginationSearchQueryParams pagination, CancellationToken cancellationToken = default);
+    public Task<ServiceResponse<PagedResponse<UserDTO>>> GetUsers(PaginationSearchQueryParams pagination, UserDTO? requestingUser = null, CancellationToken cancellationToken = default);
     /// <summary>
     /// Login as suggested responds to a user login request with the JWT token and user information.
     /// </summary>
@@ -41,4 +41,7 @@ public interface IUserService
     /// If the requesting user is null then no verification is performed as it indicates that the application.
     /// </summary>
     public Task<ServiceResponse> DeleteUser(Guid id, UserDTO? requestingUser = null, CancellationToken cancellationToken = default);
+
+    public Task<ServiceResponse> RegisterUser(UserRegisterDTO user, UserDTO? requestingUser, CancellationToken cancellationToken = default);
+
 }

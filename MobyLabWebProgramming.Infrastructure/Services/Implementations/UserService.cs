@@ -22,7 +22,7 @@ public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginSe
 {
     public async Task<ServiceResponse<UserDTO>> GetUser(Guid id, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
-        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin) // Verify who can add the user, you can change this however you se fit.
+        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin && requestingUser.Id != id) // Verify who can add the user, you can change this however you se fit.
         {
             return ServiceResponse.FromError<UserDTO>(new ErrorMessage(HttpStatusCode.Forbidden, "Only the admin or the own user can update the user!", ErrorCodes.CannotUpdate));
         }
@@ -34,8 +34,12 @@ public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginSe
             ServiceResponse.FromError<UserDTO>(CommonErrors.UserNotFound); // Pack the result or error into a ServiceResponse.
     }
 
-    public async Task<ServiceResponse<PagedResponse<UserDTO>>> GetUsers(PaginationSearchQueryParams pagination, CancellationToken cancellationToken = default)
+    public async Task<ServiceResponse<PagedResponse<UserDTO>>> GetUsers(PaginationSearchQueryParams pagination, UserDTO? requestingUser = null, CancellationToken cancellationToken = default)
     {
+        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin)
+        {
+            return ServiceResponse.FromError<PagedResponse<UserDTO>>(new ErrorMessage(HttpStatusCode.Forbidden, "Only the admin can see all users!", ErrorCodes.CannotUpdate));
+        }
         var result = await repository.PageAsync(pagination, new UserProjectionSpec(pagination.Search), cancellationToken); // Use the specification and pagination API to get only some entities from the database.
 
         return ServiceResponse.ForSuccess(result);
@@ -45,15 +49,11 @@ public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginSe
     {
         var result = await repository.GetAsync(new UserSpec(login.Email), cancellationToken);
 
-        if (result == null) // Verify if the user is found in the database.
-        {
-            return ServiceResponse.FromError<LoginResponseDTO>(CommonErrors.UserNotFound); // Pack the proper error as the response.
-        }
+        if (result == null)
+            return ServiceResponse.FromError<LoginResponseDTO>(CommonErrors.UserNotFound);
 
         if (result.Credentials.Password != login.Password) // Verify if the password hash of the request is the same as the one in the database.
-        {
             return ServiceResponse.FromError<LoginResponseDTO>(new(HttpStatusCode.BadRequest, "Wrong password!", ErrorCodes.WrongPassword));
-        }
 
         var user = new UserDTO
         {
@@ -75,31 +75,53 @@ public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginSe
 
     public async Task<ServiceResponse> AddUser(UserAddDTO user, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
-    
-    var result = await repository.GetAsync(new UserSpec(user.Email), cancellationToken);
-    
-    if (result != null)
-    {
-        return ServiceResponse.FromError(new(HttpStatusCode.Conflict, "The user already exists!", ErrorCodes.UserAlreadyExists));
-    }
-    
-    await repository.AddAsync(new User
-    {
-        Credentials = new Credentials()
+        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin) // Verify who can add the user, you can change this however you se fit.
+            return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the admin or the own user can update the user!", ErrorCodes.CannotUpdate));
+        
+        var result = await repository.GetAsync(new UserSpec(user.Email), cancellationToken);
+        
+        if (result != null)
+            return ServiceResponse.FromError(new(HttpStatusCode.Conflict, "The user already exists!", ErrorCodes.UserAlreadyExists));
+        
+        await repository.AddAsync(new User
         {
-            Email = user.Email,
-            Password = user.Password
-        },
-        Name = user.Name,
-        Role = user.Role,
-    }, cancellationToken); // A new entity is created and persisted in the database.
-    
-    await mailService.SendMail(user.Email, "Welcome!", MailTemplates.UserAddTemplate(user.Name), true, "My App", cancellationToken); // You can send a notification on the user email. Change the email if you want.
-    
-    return ServiceResponse.ForSuccess();
+            Credentials = new Credentials()
+            {
+                Email = user.Email,
+                Password = user.Password
+            },
+            Name = user.Name,
+            Role = user.Role
+        }, cancellationToken); // A new entity is created and persisted in the database.
+        
+        await mailService.SendMail(user.Email, "Welcome!", MailTemplates.UserAddTemplate(user.Name), true, "My App", cancellationToken); // You can send a notification on the user email. Change the email if you want.
+        
+        return ServiceResponse.ForSuccess();
     }
     
-    [Authorize]
+    public async Task<ServiceResponse> RegisterUser(UserRegisterDTO user, UserDTO? requestingUser, CancellationToken cancellationToken = default)
+    {
+        var result = await repository.GetAsync(new UserSpec(user.Email), cancellationToken);
+        
+        if (result != null)
+            return ServiceResponse.FromError(new(HttpStatusCode.Conflict, "The user already exists!", ErrorCodes.UserAlreadyExists));
+        
+        await repository.AddAsync(new User
+        {
+            Credentials = new Credentials()
+            {
+                Email = user.Email,
+                Password = user.Password
+            },
+            Name = user.Name,
+            Role = UserRoleEnum.Client
+        }, cancellationToken); // A new entity is created and persisted in the database.
+        
+        await mailService.SendMail(user.Email, "Welcome!", MailTemplates.UserAddTemplate(user.Name), true, "My App", cancellationToken); // You can send a notification on the user email. Change the email if you want.
+        
+        return ServiceResponse.ForSuccess();
+    }
+    
     public async Task<ServiceResponse> UpdateUser(UserUpdateDTO user, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
         if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin && requestingUser.Id != user.Id) // Verify who can add the user, you can change this however you se fit.
