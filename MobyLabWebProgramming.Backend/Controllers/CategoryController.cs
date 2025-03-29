@@ -21,22 +21,7 @@ public class CategoryController(ICategoryService categoryService, IUserService u
     [HttpGet]
     public async Task<ActionResult<RequestResponse<List<CategoryDTO>>>> GetAll()
     {
-        var currentUser = await GetCurrentUser();
-
-        return currentUser.Result != null
-            ? FromServiceResponse(await categoryService.GetCategories())
-            : ErrorMessageResult<List<CategoryDTO>>(currentUser.Error);
-
-    }
-    
-    [HttpGet(template: "{id:Guid}")]
-    public async Task<ActionResult<RequestResponse<CategoryDTO>>> GetCategory([FromRoute] Guid id)
-    {
-        var currentUser = await GetCurrentUser();
-        
-        return currentUser.Result != null
-            ? FromServiceResponse(await categoryService.GetCategory(id))
-            : ErrorMessageResult<CategoryDTO>(currentUser.Error);
+        return FromServiceResponse(await categoryService.GetCategories());
     }
 
     [Authorize]

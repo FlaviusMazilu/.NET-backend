@@ -11,6 +11,7 @@ using MobyLabWebProgramming.Infrastructure.Database;
 using MobyLabWebProgramming.Infrastructure.Repositories.Implementation;
 using MobyLabWebProgramming.Infrastructure.Repositories.Interfaces;
 using MobyLabWebProgramming.Infrastructure.Services.Interfaces;
+using Org.BouncyCastle.Asn1.Esf;
 
 namespace MobyLabWebProgramming.Infrastructure.Services.Implementations;
 
@@ -81,6 +82,20 @@ public class ProductService(IRepository<WebAppDatabaseContext> repository) : IPr
         };
         await repository.AddAsync(newProduct, cancellationToken);
         
+        return ServiceResponse.ForSuccess();
+    }
+
+    public async Task<ServiceResponse> SellProduct(ProductSellDTO product, UserDTO requestingUser, CancellationToken cancellationToken = default)
+    {
+        var result = await repository.GetAsync(new ProductSellerSpec(product.SellerId, product.ProductId), cancellationToken);
+        if (result == null)
+            return ServiceResponse.FromError(CommonErrors.ProductNotFound);
+        
+        if (result.Quantity == 0)
+            return ServiceResponse.FromError(new ErrorMessage(HttpStatusCode.BadRequest, "No more stock left"));
+        result.Quantity--;
+        
+        await repository.UpdateAsync(result, cancellationToken);
         return ServiceResponse.ForSuccess();
     }
 

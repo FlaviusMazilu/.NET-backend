@@ -36,6 +36,16 @@ public class ProductController(IUserService userService, IProductService product
     }
 
     [HttpPost]
+    public async Task<ActionResult<RequestResponse>> SellProduct(ProductSellDTO product)
+    {
+        var currentUser = await GetCurrentUser();
+        
+        return currentUser.Result != null ? 
+            FromServiceResponse(await productService.SellProduct(product, currentUser.Result)) :
+            ErrorMessageResult(currentUser.Error);
+    }
+
+    [HttpPost]
     [Authorize]
     public async Task<ActionResult<RequestResponse>> CreateProduct(ProductCreateDTO product)
     {

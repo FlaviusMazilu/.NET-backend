@@ -56,4 +56,6 @@ public interface IProductService
     /// </summary>
     public Task<ServiceResponse> CreateProduct(ProductCreateDTO product, UserDTO requestingUser,
         CancellationToken cancellationToken = default);
+    
+    public Task<ServiceResponse> SellProduct(ProductSellDTO product, UserDTO requestingUser, CancellationToken cancellationToken = default);
 }
