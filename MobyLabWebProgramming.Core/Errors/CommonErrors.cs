@@ -16,4 +16,6 @@ public static class CommonErrors
     public static ErrorMessage ProductNotFound => new(HttpStatusCode.NotFound, "Product doesn't exist!", ErrorCodes.EntityNotFound);
     public static ErrorMessage EntityNameAlreadyExists => new(HttpStatusCode.Conflict, "An entity of this type already exists with this name");
     public static ErrorMessage SellerNotFound => new(HttpStatusCode.NotFound, "Seller doesn't exist!", ErrorCodes.EntityNotFound);
+    public static ErrorMessage FeedbackNotFound => new(HttpStatusCode.NotFound, "Feedback doesn't exist!", ErrorCodes.EntityNotFound);
+
 }
