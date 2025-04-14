@@ -11,6 +11,12 @@ services:
       POSTGRES_PASSWORD: mobylab-app
     volumes:
       - mobylab-app-db-vol:/var/lib/postgresql/data
+  
+  io_service:
+    image: backend
+    ports:
+      - 8080:80
+      - 4000:4000
 
 volumes:
   mobylab-app-db-vol:
