@@ -7,4 +7,5 @@ public class ProductDTO
     public Guid CategoryId { get; set; }
     public int TotalQuantity { get; set; }
     public float StartingPrice { get; set; }
+    public float Rating { get; set; }
 }

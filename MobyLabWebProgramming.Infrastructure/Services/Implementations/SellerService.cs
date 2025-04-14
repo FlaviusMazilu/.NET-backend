@@ -24,9 +24,9 @@ public class SellerService(IRepository<WebAppDatabaseContext> repository) : ISel
             : ServiceResponse.FromError<SellerDTO>(CommonErrors.SellerNotFound);
     }
 
-    public async Task<ServiceResponse<PagedResponse<SellerDTO>>> GetSellers(PaginationSearchQueryParams pagination, CancellationToken cancellationToken = default)
+    public async Task<ServiceResponse<PagedResponse<SellerDTO>>> GetSellers(PaginationSearchRelatedEntityQueryParams pagination, CancellationToken cancellationToken = default)
     {
-        var result = await repository.PageAsync(pagination, new SellerProjectionSpec(), cancellationToken);
+        var result = await repository.PageAsync(pagination, new SellerProjectionSpec(pagination.Search, pagination.entityId), cancellationToken);
         return ServiceResponse.ForSuccess<PagedResponse<SellerDTO>>(result);
     }
 

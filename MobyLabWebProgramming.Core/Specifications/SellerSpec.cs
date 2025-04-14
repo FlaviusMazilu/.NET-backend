@@ -14,4 +14,7 @@ public class SellerSpec : Specification<Seller>
         else
             Query.Where(e => e.Id == id);
     }
+
+    public SellerSpec(Guid userAccountId) =>
+        Query.Where(e => e.UserAccountId == userAccountId);
 }

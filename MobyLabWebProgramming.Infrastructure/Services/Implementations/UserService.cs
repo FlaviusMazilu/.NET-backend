@@ -99,7 +99,7 @@ public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginSe
         return ServiceResponse.ForSuccess();
     }
     
-    public async Task<ServiceResponse> RegisterUser(UserRegisterDTO user, UserDTO? requestingUser, CancellationToken cancellationToken = default)
+    public async Task<ServiceResponse> RegisterUser(UserRegisterDTO user, CancellationToken cancellationToken = default)
     {
         var result = await repository.GetAsync(new UserSpec(user.Email), cancellationToken);
         
@@ -150,8 +150,10 @@ public class UserService(IRepository<WebAppDatabaseContext> repository, ILoginSe
             return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the admin or the own user can delete the user!", ErrorCodes.CannotDelete));
         }
 
-        await repository.DeleteAsync<User>(id, cancellationToken); // Delete the entity.
-
+        var user = await repository.GetAsync<User>(new UserSpec(id), cancellationToken);
+        if (user != null)
+            await repository.DeleteAsync<Credentials>(user.Credentials.Id, cancellationToken);
+        
         return ServiceResponse.ForSuccess();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Http;
 using MobyLabWebProgramming.Core.DataTransferObjects;
 using MobyLabWebProgramming.Core.DataTransferObjects.Product;
 using MobyLabWebProgramming.Core.Entities;
@@ -15,8 +16,17 @@ using Org.BouncyCastle.Asn1.Esf;
 
 namespace MobyLabWebProgramming.Infrastructure.Services.Implementations;
 
-public class ProductService(IRepository<WebAppDatabaseContext> repository) : IProductService
+public class ProductService(IRepository<WebAppDatabaseContext> repository, IFileRepository fileRepository) : IProductService
 {
+    // private static string GetFileDirectory(Guid userId) => Path.Join(userId.ToString(), IUserFileService.UserFilesDirectory);
+    //
+    // public async Task<ServiceResponse> PostPicture(IFormFile file, UserDTO requestingUser, CancellationToken cancellationToken = default)
+    // {
+    //     var result = await fileRepository.SaveFile(file, GetFileDirectory(requestingUser.Id));
+    //
+    //     return ServiceResponse.ForSuccess();
+    // }
+    
     public async Task<ServiceResponse<ProductDTO>> GetProduct(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await repository.GetAsync(new ProductProjectionSpec(id), cancellationToken);
@@ -38,18 +48,25 @@ public class ProductService(IRepository<WebAppDatabaseContext> repository) : IPr
         if (requestingUser.Role != UserRoleEnum.Seller)
             return ServiceResponse.FromError(CommonErrors.GenericUnauthorizedAction);
 
-        var result = await repository.GetAsync(new ProductSpec(product.ProductId), cancellationToken);
-        if (result == null)
+        var productResult = await repository.GetAsync(new ProductSpec(product.ProductId), cancellationToken);
+        if (productResult == null)
             return ServiceResponse.FromError(CommonErrors.ProductNotFound);
         
-        var productSellers = await repository.GetAsync(new ProductSellerSpec(requestingUser.Id, product.ProductId), cancellationToken);
+        var sellerResult = await repository.GetAsync(new SellerSpec(requestingUser.Id), cancellationToken);
+
+        if (sellerResult == null)
+            return ServiceResponse.FromError(new ErrorMessage(HttpStatusCode.Forbidden,
+                "me culpa, this shouldn't happen"));
+        
+        
+        var productSellers = await repository.GetAsync(new ProductSellerSpec(sellerResult.Id, product.ProductId), cancellationToken);
         if (productSellers != null)
             return ServiceResponse.FromError(new ErrorMessage(HttpStatusCode.Conflict, "Product already registered, use PUT to update"));
 
         var productSeller = new ProductSeller()
         {
             ProductId = product.ProductId,
-            SellerId = requestingUser.Id,
+            SellerId = sellerResult.Id,
             Price = product.Price,
             Discount = product.Discount ?? 0,
             Quantity = product.Quantity

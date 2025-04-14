@@ -20,7 +20,7 @@ public class SellerController(IUserService userService, ISellerService sellerSer
     }
 
     [HttpGet]
-    public async Task<ActionResult<RequestResponse<PagedResponse<SellerDTO>>>> GetPage([FromQuery] PaginationSearchQueryParams pagination)
+    public async Task<ActionResult<RequestResponse<PagedResponse<SellerDTO>>>> GetPage([FromQuery] PaginationSearchRelatedEntityQueryParams pagination)
     {
         return FromServiceResponse(await sellerService.GetSellers(pagination));
     }

@@ -15,7 +15,7 @@ public interface ISellerService
     /// <summary>
     /// GetSellers returns page with sellers information from the database.
     /// </summary>
-    public Task<ServiceResponse<PagedResponse<SellerDTO>>> GetSellers(PaginationSearchQueryParams pagination, CancellationToken cancellationToken = default);
+    public Task<ServiceResponse<PagedResponse<SellerDTO>>> GetSellers(PaginationSearchRelatedEntityQueryParams pagination, CancellationToken cancellationToken = default);
     /// <summary>
     /// GetSellerCount returns the number of users in the database.
     /// </summary>

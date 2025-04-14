@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MobyLabWebProgramming.Core.DataTransferObjects.Product;
 using MobyLabWebProgramming.Core.Entities;
+using MobyLabWebProgramming.Core.Requests;
 
 namespace MobyLabWebProgramming.Core.Specifications;
 
@@ -12,9 +13,9 @@ public class ProductProjectionSpec : Specification<Product, ProductDTO>
         Id = e.Id,
         Name = e.Name,
         CategoryId = e.CategoryId,
-        TotalQuantity = e.ProductSellers.Sum(p => p.Quantity),
-        StartingPrice = e.ProductSellers.Min(p => p.Price)
-        
+        TotalQuantity = e.ProductSellers.Sum(p => (int?)p.Quantity) ?? 0,
+        StartingPrice = e.ProductSellers.Min(p => (float?)p.Price) ?? 0f,
+        Rating = e.Rating,
     })
     .OrderByDescending(e => e.CreatedAt, orderByCreatedAt);
     

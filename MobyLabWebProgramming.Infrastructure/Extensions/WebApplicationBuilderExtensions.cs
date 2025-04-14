@@ -189,7 +189,9 @@ public static class WebApplicationBuilderExtensions
             .AddScoped<ICategoryService, CategoryService>()
             .AddScoped<IProductService, ProductService>()
             .AddScoped<ISellerService, SellerService>()
-            .AddScoped<IMailService, MailService>();
+            .AddScoped<IMailService, MailService>()
+            .AddScoped<IProductFileService, ProductFileService>()
+            .AddScoped<IFeedbackService, FeedbackService>();
 
         return builder;
     }

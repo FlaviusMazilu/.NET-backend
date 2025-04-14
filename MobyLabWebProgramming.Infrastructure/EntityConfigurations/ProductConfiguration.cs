@@ -25,5 +25,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired();
         builder.Property(e => e.UpdatedAt)
             .IsRequired();
+        builder.Property(e => e.Rating)
+            .HasDefaultValue(0);
     }
 }

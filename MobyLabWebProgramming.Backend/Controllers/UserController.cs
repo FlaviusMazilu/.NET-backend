@@ -48,7 +48,7 @@ public class UserController(IUserService userService) : AuthorizedController(use
     }
 
     /// <summary>
-    /// This method implements the Create operation (C from CRUD) of a user. 
+    /// Allowed only for admins to access this endpoint, can create a user with a specific Role
     /// </summary>
     [Authorize]
     [HttpPost] // This attribute will make the controller respond to a HTTP POST request on the route /api/User/Add.
@@ -61,16 +61,15 @@ public class UserController(IUserService userService) : AuthorizedController(use
             FromServiceResponse(await UserService.AddUser(user, currentUser.Result)) :
             ErrorMessageResult(currentUser.Error);
     }
-    
+    /// <summary>
+    /// Endpoint for a new user to register 
+    /// </summary>
     [HttpPost]
-    public async Task<ActionResult<RequestResponse>> Register([FromBody] UserAddDTO user)
+    public async Task<ActionResult<RequestResponse>> Register([FromBody] UserRegisterDTO user)
     {
-        var currentUser = await GetCurrentUser();
         user.Password = PasswordUtils.HashPassword(user.Password);
 
-        return currentUser.Result != null ?
-            FromServiceResponse(await UserService.RegisterUser(user, currentUser.Result)) :
-            ErrorMessageResult(currentUser.Error);
+        return FromServiceResponse(await UserService.RegisterUser(user));
     }
 
 

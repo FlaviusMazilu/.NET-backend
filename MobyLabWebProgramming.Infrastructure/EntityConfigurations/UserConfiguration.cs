@@ -43,6 +43,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasOne(e => e.Credentials)
             .WithOne(e => e.User)
             .HasPrincipalKey<Credentials>(e => e.Id)
-            .HasForeignKey<User>(e => e.CredentialsId);
+            .HasForeignKey<User>(e => e.CredentialsId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
